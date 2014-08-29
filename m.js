@@ -499,7 +499,7 @@ function lvl(l) {
 }
 
 function init() {
-	lv=9;
+	lv=1;
 	lvl(lv);
 	main();
 }
