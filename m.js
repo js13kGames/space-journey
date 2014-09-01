@@ -56,18 +56,46 @@ function A(cx, cy, p) {
 	this.p=p;
 	this.d = 0;
 	this.x0 = 0;
-	this.u = function() {
+	this.u = function(p) {
 		if (this.j != 0) {
-			g=-5;
+			
+			g=[0, 0];
+			G = 50;
+			//
+			player=this;
+			p.forEach(function(pl) {
+				gM = G * pl.r / (Math.pow(pl.c[0]-player.c[0], 2)+Math.pow(pl.c[1]-player.c[1], 2));
+				gu = [pl.c[0]-player.c[0], pl.c[1]-player.c[1]];
 
+				gu[0]/=Math.sqrt(gu[0]*gu[0]+gu[1]*gu[1]);
+				gu[1]/=Math.sqrt(gu[0]*gu[0]+gu[1]*gu[1]);
+				gu[0]*=gM;
+				gu[1]*=gM;
+				g[0]+=gu[0];
+				g[1]+=gu[1];
+
+			});
+			//console.log(g);
+			//
+			//g=-5;
 			if (this.x0==0) {
 				this.x0 = this.c;
+				this.c[0]+=0.05*this.v[0]*30;
+			this.c[1]+=3*0.05*this.v[1]*30;
+			this.v[0]+=0.05*g[0];
+			this.v[1]+=0.05*g[1];
 			}
+			//console.log(g);
+			this.c[0]+=0.05*this.v[0]*30;
+			this.c[1]+=0.05*this.v[1]*30;
+			this.v[0]+=0.05*g[0];
+			this.v[1]+=0.05*g[1];
+
 			
-			this.c = [Math.floor(this.x0[0] + 30*this.v[0]*this.t), Math.floor(this.x0[1] + 30*this.v[1]*this.t - 0.5*g*this.t*this.t)];
+			//this.c = [Math.floor(this.x0[0] + 3*this.v[0]*this.t + 0.5*g[0]*this.t*this.t), Math.floor(this.x0[1] + 30*this.v[1]*this.t + 0.5*g[1]*this.t*this.t)];
 		} else {
-			this.c[0] = Math.floor(-(this.p.r+5) * Math.sin(this.t) + this.p.c[0]);
-			this.c[1] = Math.floor(-(this.p.r+5) * Math.cos(this.t) + this.p.c[1]);
+			this.c[0] = Math.floor(-(this.p.r+this.r) * Math.sin(this.t) + this.p.c[0]);
+			this.c[1] = Math.floor(-(this.p.r+this.r) * Math.cos(this.t) + this.p.c[1]);
 		}
 		
 
@@ -89,13 +117,14 @@ ctx.fillText("Press any button to start again", 160, 250);
 
 function u(e) {
 	k = ('which' in e) ? e.which : e.keyCode;
-	if (k==39 || k==37) {
+	if (k==39 || k==37&&play==1) {
 		a.d = 0;
 	}
 }
 
 function d(e) {
 	if (play!=-1) {
+
 		if (play==0) {
 			lvl(lv);
 			play=1;
@@ -111,9 +140,11 @@ function d(e) {
 			
 				a.j=1;
 
+
 				a.d = 0;
 				a.t = 0;
 				a.v = [(a.c[0]-a.p.c[0])/a.p.r, (a.c[1]-a.p.c[1])/a.p.r];
+
 				a.p=0;
 		}
 		}
@@ -243,7 +274,7 @@ function move(ctx) {
 	if (a.j != 0) {
 		a.t += 0.05;
 	for (i=0; i<p.length; i++) {
-		if (Math.sqrt(Math.pow(a.c[0]-p[i].c[0], 2)+Math.pow(a.c[1]-p[i].c[1], 2))<=p[i].r) {
+		if (Math.sqrt(Math.pow(a.c[0]-p[i].c[0], 2)+Math.pow(a.c[1]-p[i].c[1], 2))<=p[i].r + a.r-5) {
 			a.p = p[i];
 			//Find t
 			dr=[a.c[0]-a.p.c[0], a.c[1]-a.p.c[1]];
@@ -253,7 +284,7 @@ function move(ctx) {
 			//
 			a.j=0;
 			a.d=1;
-			a.u();
+			a.u(p);
 			a.d=0;
 			a.x0=0;
 		}
@@ -262,7 +293,7 @@ function move(ctx) {
 	} else if (a.d!=0) {
 	a.t += 0.05*a.d;
 	}
-	a.u();
+	a.u(p);
 	// Check if lost
 
 	if ((a.c[0]+a.r<0 || a.c[0]-a.r>W || a.c[1]+a.r<0 || a.c[1]-a.r>H)&&a.j!=0) {
@@ -365,7 +396,7 @@ function lvl(l) {
 		case 3:
 
 			p.push(new P(300, 80, 50, 0, 1));
-			p.push(new P(50, 400, 100, 0, 3));
+			p.push(new P(50, 400, 150, 0, 3));
 			p.push(new P(500, 400, 50, 1, 3));
 
 			a = new A(100, 200 - 55, p[0]);
@@ -384,7 +415,7 @@ function lvl(l) {
 			
 			a = new A(100, 200 - 55, p[0]);
 
-			el.push(new E(580, 380, 5, 1));
+			el.push(new E(450, 200, 5, 1));
 			el.push(new E(500, 150, 5, 2));
 			el.push(new E(250, 150, 5, 3));
 			el.push(new E(300, 375, 5, 4));
@@ -392,7 +423,7 @@ function lvl(l) {
 		case 5:
 
 			p.push(new P(50, 380, 100, 0, 2));
-			p.push(new P(400, 200, 60, 2, 3));
+			p.push(new P(300, 200, 60, 2, 3));
 			p.push(new P(50, 110, 30, 4, 1));
 			
 			a = new A(100, 200 - 55, p[0]);
@@ -440,10 +471,12 @@ function lvl(l) {
 			
 			a = new A(100, 200 - 55, p[0]);
 
-
+			el.push(new E(100, 310, 5, 1));
 			el.push(new E(500, 310, 5, 2));
 			el.push(new E(500, 230, 5, 3));
 			el.push(new E(300, 350, 5, 4));
+			
+
 			break;
 
 		case 9:
@@ -474,9 +507,11 @@ function lvl(l) {
 }
 
 function init() {
-	lv=1;
+	lv=9;
+	play=1;
 	lvl(lv);
 	main();
+
 }
 
 // Create the canvas
@@ -500,7 +535,7 @@ var m_context = m_canvas.getContext('2d');
 var then = Date.now();
 var p=[];
 var a;
-var play=1;
+var play=-1;
 var el=[];
 var got=0;
 var lv=1;
